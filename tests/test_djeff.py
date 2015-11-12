@@ -47,6 +47,17 @@ class TestDjeff(unittest.TestCase):
 
         assert(out == expected_out)
 
+    def test_002_instantiate_parser(self):
+        djeff.DjeffParser()
+
+    def test_003_reconstruct_attrs(self):
+        test_list = [('attr1', 'val1'), ('attr2', 'val2')]
+        expected_out = 'attr1=val1 attr2=val2'
+
+        out = djeff.reconstruct_attrs(test_list)
+
+        assert (out == expected_out)
+
 
 if __name__ == '__main__':
     import sys

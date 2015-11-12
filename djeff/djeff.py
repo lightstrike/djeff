@@ -16,7 +16,7 @@ class DjeffTemplates(DjangoTemplates):
 class DjeffTemplate(Template):
     def render(self, context=None, request=None):
         rendered_context = super().render(context, request)
-        return djeffify(rendered_context)
+        return djeffify_html(rendered_context)
 
 
 def djeffify_string(string_to_djeff):
@@ -29,33 +29,33 @@ def djeffify_string(string_to_djeff):
     return string_to_djeff
 
 
-def djeffify(rendered_string):
+def djeffify_html(rendered_string):
     """
     This function contains the core logic for a
     middleware, template tag or Template engine approach
     """
     parser = DjeffParser()
     parser.feed(rendered_string)
-    return parser.dhtml
+    return parser.djhtml
 
 
 def reconstruct_attrs(attrs):
     tag_string = ''
     for attr in attrs:
-        tag_string += (attr[0] + '=' + attr[1] + ' ')
+        tag_string += ('{}={} ').format(attr[0], attr[1])
     return tag_string.strip()
 
 
 class DjeffParser(HTMLParser):
     def __init__(self, convert_charrefs=True, *args, **kwargs):
-        super().__init__(convert_charrefs, *args, **kwargs)
-        self.dhtml = ''
+        HTMLParser.__init__(self)
+        self.djhtml = ''
 
     def handle_starttag(self, tag, attrs):
-        self.dhtml += '<{} {}>'.format(tag, reconstruct_attrs(attrs))
+        self.djhtml += '<{} {}>'.format(tag, reconstruct_attrs(attrs))
 
     def handle_endtag(self, tag):
-        self.dhtml += '</{}>'.format(tag)
+        self.djhtml += '</{}>'.format(tag)
 
     def handle_data(self, data):
         """
@@ -63,4 +63,4 @@ class DjeffParser(HTMLParser):
         """
         if data.strip():
             data = djeffify_string(data)
-        self.dhtml += data
+        self.djhtml += data
