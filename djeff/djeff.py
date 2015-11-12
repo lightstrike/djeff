@@ -1,6 +1,11 @@
+import re
 from django.template.backends.django import DjangoTemplates, Template
 from django.template.engine import _dirs_undefined
-from html.parser import HTMLParser
+
+try:
+    from html.parser import HTMLParser
+except ImportError:
+    from HTMLParser import HTMLParser
 
 
 class DjeffTemplates(DjangoTemplates):
@@ -12,6 +17,16 @@ class DjeffTemplate(Template):
     def render(self, context=None, request=None):
         rendered_context = super().render(context, request)
         return djeffify(rendered_context)
+
+
+def djeffify_string(string_to_djeff):
+    """
+    Djeffifies string_to_djeff
+    """
+    string_to_djeff = re.sub(r'^(?=[jg])', 'd', string_to_djeff, flags=re.IGNORECASE)  # first
+    string_to_djeff = re.sub(r'[ ](?=[jg])', ' d', string_to_djeff, flags=re.IGNORECASE)  # spaces
+    string_to_djeff = re.sub(r'[\n](?=[jg])', '\nd', string_to_djeff, flags=re.IGNORECASE)  # \n
+    return string_to_djeff
 
 
 def djeffify(rendered_string):
@@ -32,8 +47,8 @@ def reconstruct_attrs(attrs):
 
 
 class DjeffParser(HTMLParser):
-    def __init__(self, *, convert_charrefs=True):
-        super().__init__(convert_charrefs)
+    def __init__(self, convert_charrefs=True, *args, **kwargs):
+        super().__init__(convert_charrefs, *args, **kwargs)
         self.dhtml = ''
 
     def handle_starttag(self, tag, attrs):
@@ -44,9 +59,8 @@ class DjeffParser(HTMLParser):
 
     def handle_data(self, data):
         """
-        FIXME: Add more functionality!
+        Djeffify data between tags
         """
         if data.strip():
-            data = "d{}".format(data)
+            data = djeffify_string(data)
         self.dhtml += data
-
