@@ -9,9 +9,22 @@ class DjeffTemplates(DjangoTemplates):
 
 
 class DjeffTemplate(Template):
+    @djeffify
     def render(self, context=None, request=None):
+        return super().render(context, request)
+        """
         rendered_context = super().render(context, request)
         return djeffify(rendered_context)
+        """
+
+
+def djeffifate(rendered_string):
+    """
+    beginnings of a decorator
+    """
+    def func_wrapper():
+        pass
+    pass
 
 
 def djeffify(rendered_string):
