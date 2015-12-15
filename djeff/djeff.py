@@ -48,7 +48,13 @@ def reconstruct_attrs(attrs):
 
 class DjeffParser(HTMLParser):
     def __init__(self, convert_charrefs=True, *args, **kwargs):
-        HTMLParser.__init__(self)
+        """
+        Explicitly set convert_charrefs to keep deprecation warnings at bay.
+
+        See:
+        https://docs.python.org/3/library/html.parser.html#html.parser.HTMLParser
+        """
+        HTMLParser.__init__(self, convert_charrefs=convert_charrefs)
         self.djhtml = ''
 
     def handle_starttag(self, tag, attrs):
