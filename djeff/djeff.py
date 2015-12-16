@@ -1,6 +1,11 @@
+import re
 from django.template.backends.django import DjangoTemplates, Template
 from django.template.engine import _dirs_undefined
-from html.parser import HTMLParser
+
+try:
+    from html.parser import HTMLParser
+except ImportError:
+    from HTMLParser import HTMLParser
 
 
 class DjeffTemplates(DjangoTemplates):
@@ -27,6 +32,16 @@ def djeffifate(rendered_string):
     pass
 
 
+def get_djeffy(string_to_djeff):
+    """
+    Djeffifies string_to_djeff
+    """
+    string_to_djeff = re.sub(r'^(?=[jg])', 'd', string_to_djeff, flags=re.IGNORECASE)  # first
+    string_to_djeff = re.sub(r'[ ](?=[jg])', ' d', string_to_djeff, flags=re.IGNORECASE)  # spaces
+    string_to_djeff = re.sub(r'[\n](?=[jg])', '\nd', string_to_djeff, flags=re.IGNORECASE)  # \n
+    return string_to_djeff
+
+
 def djeffify(rendered_string):
     """
     This function contains the core logic for a
@@ -34,32 +49,36 @@ def djeffify(rendered_string):
     """
     parser = DjeffParser()
     parser.feed(rendered_string)
-    return parser.dhtml
+    return parser.djhtml
 
 
 def reconstruct_attrs(attrs):
     tag_string = ''
     for attr in attrs:
-        tag_string += (attr[0] + '=' + attr[1] + ' ')
+        tag_string += ('{}={} ').format(attr[0], attr[1])
     return tag_string.strip()
 
 
 class DjeffParser(HTMLParser):
-    def __init__(self, *, convert_charrefs=True):
-        super().__init__(convert_charrefs)
-        self.dhtml = ''
+    def __init__(self, convert_charrefs=True, *args, **kwargs):
+        """
+        Explicitly set convert_charrefs to keep deprecation warnings at bay.
+
+        See:
+        https://docs.python.org/3/library/html.parser.html#html.parser.HTMLParser
+        """
+        HTMLParser.__init__(self, convert_charrefs=convert_charrefs)
+        self.djhtml = ''
 
     def handle_starttag(self, tag, attrs):
-        self.dhtml += '<{} {}>'.format(tag, reconstruct_attrs(attrs))
+        self.djhtml += '<{} {}>'.format(tag, reconstruct_attrs(attrs))
 
     def handle_endtag(self, tag):
-        self.dhtml += '</{}>'.format(tag)
+        self.djhtml += '</{}>'.format(tag)
 
     def handle_data(self, data):
         """
-        FIXME: Add more functionality!
+        Djeffify data between tags
         """
         if data.strip():
-            data = "d{}".format(data)
-        self.dhtml += data
-
+            self.djhtml += get_djeffy(data)
