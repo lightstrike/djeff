@@ -54,7 +54,12 @@ class DjeffParser(HTMLParser):
         See:
         https://docs.python.org/3/library/html.parser.html#html.parser.HTMLParser
         """
-        HTMLParser.__init__(self, convert_charrefs=convert_charrefs)
+        # python 3
+        try:
+            HTMLParser.__init__(self, convert_charrefs=convert_charrefs)
+        # python 2
+        except TypeError:
+            HTMLParser.__init__(self)
         self.djhtml = ''
 
     def handle_starttag(self, tag, attrs):
