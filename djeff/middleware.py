@@ -8,7 +8,7 @@ class DjeffMiddleware(object):
     def process_response(self, request, response):
         try:
             if settings.DJEFF:
-                response.content = djeff(response.content)
+                response.content = djeff.djeffify_html(response.content.decode())
         except AttributeError:
             raise ImproperlyConfigured(
                 'DJEFF is not configured in django settings. Set "DJEFF = True" to enable djeffing'
